@@ -84,6 +84,14 @@ class VirtualMachine implements VirtualMachineInterface
     }
 
     /**
+     * @param OsProfile $profile
+     */
+    public function setOsProfile($profile)
+    {
+        $this->properties['osProfile'] = $profile;
+    }
+
+    /**
      * @param StorageProfile $profile
      */
     public function setStorageProfile($profile)
@@ -92,7 +100,15 @@ class VirtualMachine implements VirtualMachineInterface
     }
 
     /**
-     *
+     * @param HardwareProfile $profile
+     */
+    public function setHardwareProfile($profile)
+    {
+        $this->properties['hardwareProfile'] = $profile;
+    }
+
+    /**
+     * Set default properties.
      */
     private function setProperties()
     {

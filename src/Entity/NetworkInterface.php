@@ -35,6 +35,14 @@ class NetworkInterface
      */
     public function setSubnet($subnetId)
     {
-        $this->properties['ipConfigurations']['subnet']['id'] = $subnetId;
+        $subnet = [
+            'name' => 'default',
+            'properties' => [
+                'subnet' => [
+                    'id' => $subnetId
+                ]
+            ]
+        ];
+        $this->properties['ipConfigurations'][] = $subnet;
     }
 }

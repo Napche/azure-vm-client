@@ -11,7 +11,7 @@ class OsProfile
 
     public $adminPassword;
 
-    public $linuxConfiguration;
+    public $linuxConfiguration = [];
 
     /**
      * @param mixed $computerName

@@ -230,13 +230,15 @@ class AzureVMClient extends AzureClient
     {
         $url = $this->getNetworkInterfaceUrl($machine->name, $machine->getResourceGroup());
         $interface->setLocation($machine->location);
-        $config = [
-            'name' => $machine->name,
-            'properties' => [],
-        ];
-        $interface->addIpConfiguration($config);
 
         return $this->put($url, $interface);
+    }
+
+
+    public function deleteNetworkInterface(VirtualMachineInterface $machine)
+    {
+        $url = $this->getNetworkInterfaceUrl($machine->name, $machine->getResourceGroup());
+        return $this->delete($url);
     }
 
     /**

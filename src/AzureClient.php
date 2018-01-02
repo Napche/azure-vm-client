@@ -74,7 +74,8 @@ abstract class AzureClient
         }
         catch (\Exception $e)
         {
-            throw $e;
+            $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            throw new \Exception($error['error']['message']);
         }
     }
 
@@ -94,7 +95,8 @@ abstract class AzureClient
         }
         catch (\Exception $e)
         {
-            throw $e;
+            $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            throw new \Exception($error['error']['message']);
         }
     }
 
@@ -110,6 +112,7 @@ abstract class AzureClient
         $url = ltrim($url, '/');
         $client = $this->getClient();
         $options['json'] = $params;
+
         try{
             $r = $client->put($url, $options);
             $body = $this->parseResponse($r);
@@ -117,7 +120,8 @@ abstract class AzureClient
         }
         catch (\Exception $e)
         {
-            throw $e;
+            $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            throw new \Exception($error['error']['message']);
         }
     }
 
@@ -139,7 +143,8 @@ abstract class AzureClient
         }
         catch (\Exception $e)
         {
-            throw $e;
+            $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            throw new \Exception($error['error']['message']);
         }
     }
 
@@ -198,7 +203,8 @@ abstract class AzureClient
         if (stripos($r->getStatusCode(), '20') === 0) {
             return json_decode($r->getBody()->getContents());
         }
-        throw new \Exception('Invalid Call');
+
+        throw new \Exception($r->getBody()->getContents());
     }
 
     /**
