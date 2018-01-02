@@ -21,4 +21,20 @@ class NetworkInterface
     {
         $this->properties['ipConfigurations'][] = $ipConfig;
     }
+
+    /**
+     * @param bool $isIPv6
+     */
+    public function isIPv6($isIPv6)
+    {
+        $this->properties['ipConfigurations']['privateIPAddressVersion'] = $isIPv6 ? 'IPv6' : 'IPv4';
+    }
+
+    /**
+     * @param string $subnetId
+     */
+    public function setSubnet($subnetId)
+    {
+        $this->properties['ipConfigurations']['subnet']['id'] = $subnetId;
+    }
 }

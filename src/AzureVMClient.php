@@ -79,17 +79,11 @@ class AzureVMClient extends AzureClient
         $url = $this->getVMUrl($machine->getName(), $resourceGroup);
         $machine->setResourceGroup($resourceGroup);
 
-        $this->checkAndCreateNetworkInterface($machine);
-
         return $this->put($url, $machine);
     }
 
     /**
      * @see createVM()
-     *
-     * @param VirtualMachineInterface $machine
-     * @param string $resourceGroup
-     * @return array
      */
     public function updateVM(VirtualMachineInterface $machine, $resourceGroup = 'Default')
     {
@@ -224,43 +218,24 @@ class AzureVMClient extends AzureClient
     }
 
     /**
-     * @param VirtualMachineInterface $machine
-     */
-    public function checkAndCreateNetworkInterface(VirtualMachineInterface $machine)
-    {
-        $profile = $machine->getNetworkProfile();
-        if (empty($profile->networkInterfaces)) {
-            $interface = $this->createNetworkInterface($machine);
-            if (is_object($interface) && isset($interface->id)) {
-                $profile->networkInterfaces[] = $interface;
-            }
-            $machine->setNetworkProfile($profile);
-        }
-    }
-
-    /**
      * Create or Update Network Interface
      *
      * @link https://docs.microsoft.com/en-us/rest/api/virtualnetwork/networkinterfaces/createorupdate
      *
      * @param VirtualMachineInterface|null $machine
+     * @param NetworkInterface $interface
      * @return mixed
      */
-    public function createNetworkInterface(VirtualMachineInterface $machine = null)
+    public function createNetworkInterface( VirtualMachineInterface $machine, NetworkInterface $interface)
     {
         $url = $this->getNetworkInterfaceUrl($machine->name, $machine->getResourceGroup());
-        $interface = new NetworkInterface();
         $interface->setLocation($machine->location);
         $config = [
             'name' => $machine->name,
-            'properties' => [
-                'subnet' => [
-                    "id" => "/subscriptions/{$this->subscriptionId}/resourceGroups/Default/providers/Microsoft.Network/virtualNetworks/Default-vnet/subnets/default",
-                ]
-            ]
-
+            'properties' => [],
         ];
         $interface->addIpConfiguration($config);
+
         return $this->put($url, $interface);
     }
 
@@ -289,7 +264,7 @@ class AzureVMClient extends AzureClient
      * @param $resourceGroup
      * @return string
      */
-    private function getNetworkInterfaceUrl($name, $resourceGroup)
+    public function getNetworkInterfaceUrl( $name, $resourceGroup = 'Default' )
     {
         return 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/networkInterfaces/' . $name . '?api-version=' . static::NETWORK_INTERFACE_API_VERSION;
     }
