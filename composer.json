@@ -1,0 +1,36 @@
+{
+  "name"       : "napche/azure-vm-client",
+  "type"       : "library",
+  "description": "Azure Virtual Machines REST API PHP library",
+  "keywords"   : ["Azure", "API", "Cloud Hosting", "SSD", "VPS", "VM"],
+  "homepage"   : "https://github.com/Napche/azure-vm-client",
+  "license"    : "MIT",
+
+  "authors": [
+    {
+      "name"    : "Dieter Vanmoortel - Napche",
+      "homepage": "https://github.com/Napche",
+      "role"    : "Developer"
+    }
+  ],
+
+  "support": {
+    "issues": "https://github.com/Napche/azure-vm-client/issues",
+    "source": "https://github.com/Napche/azure-vm-client"
+  },
+
+  "require": {
+    "php": ">=7.0",
+    "guzzlehttp/guzzle"  : "~5.3"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "Azure\\": "src/"
+    }
+  },
+
+  "config": {
+    "preferred-install": "dist"
+  }
+}
