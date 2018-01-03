@@ -243,7 +243,7 @@ class AzureVMClient extends AzureClient
             'tags' => $machine->tags,
             'location' => $machine->location,
             'properties' => [
-                'publicIPAllocationMethod' => 'Static',
+                'publicIPAllocationMethod' => $ipv6 ? 'Dynamic' : 'Static',
                 'publicIPAddressVersion' => $ipv6 ? 'IPv6' : 'IPv4',
             ]
         ];
