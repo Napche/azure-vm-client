@@ -41,6 +41,11 @@ abstract class AzureClient
     protected $guzzleVersion;
 
     /**
+     * @var array
+     */
+    protected $locations = [];
+
+    /**
      * AzureVMClient constructor.
      *
      * @param string $tenantId
@@ -90,8 +95,7 @@ abstract class AzureClient
         $client = $this->getClient();
         try{
             $r = $client->delete($url);
-            $body = $this->parseResponse($r);
-            return $body;
+            return $r->getStatusCode();
         }
         catch (\Exception $e)
         {
@@ -148,6 +152,100 @@ abstract class AzureClient
         }
     }
 
+
+    /**
+     * @param $name
+     * @param string $location
+     * @param string $tags
+     * @return int
+     */
+    public function createResourceGroup($name, $location = 'westeurope', $tags = '')
+    {
+        $this->validateLocation($location);
+        $url = 'resourceGroups/'. $name . '?api-version=' . static::RESOURCEGROUPS_API_VERSION;
+        $options = [
+            'name' => $name,
+            'location' => $location,
+            'tags' => $tags,
+        ];
+
+        return $this->put($url, $options);
+    }
+
+    /**
+     * @param $id
+     * @return int
+     */
+    public function deleteResourceGroup($name)
+    {
+        $url = 'resourceGroups/'. $name . '?api-version=' . static::RESOURCEGROUPS_API_VERSION;
+        $r = $this->client->delete($url);
+        return $r->getStatusCode();
+    }
+
+    /**
+     * @param $tagName
+     * @return string
+     */
+    public function getTaggedResources($tagName, $tagValue)
+    {
+        $body = $this->get('resources?$filter=tagname eq \''. $tagName .'\' and tagvalue eq \'' . $tagValue .'\'&api-version=' . static::RESOURCEGROUPS_API_VERSION);
+        return $body->value;
+    }
+
+    /**
+     * @param $id
+     * @return int
+     */
+    public function deleteResource($id)
+    {
+        $url = static::API_BASE_URL . ltrim($id, '/') . '?api-version=2017-03-30'; // Other API Version needed for delete ( WTF?? )
+        $result = $this->client->delete($url);
+        return $result->getStatusCode();
+    }
+
+    /**
+     * @param $id
+     * @return object
+     */
+    public function getResource($id)
+    {
+        $parts = explode('/', $id);
+
+        $url = static::API_BASE_URL . ltrim($id, '/'); // Other API Version needed for delete ( WTF?? )
+        $api = '2017-03-30';
+
+        switch (true) {
+            case in_array('networkInterfaces', $parts):
+            case in_array('publicIPAddresses', $parts):
+                $api = static::NETWORK_INTERFACE_API_VERSION;
+                break;
+            case in_array('images', $parts):
+                $api = '2017-12-01';
+                break;
+        }
+
+        $url .= '?api-version=' . $api;
+        $result = $this->client->get($url);
+        return $this->parseResponse($result);
+    }
+
+    /**
+     * Subscriptions - List Locations
+     *
+     * @see https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/listlocations
+     *
+     * @return array
+     */
+    public function listLocations()
+    {
+        if (!$this->locations) {
+            $body = $this->get('locations?api-version=' . static::LOCATIONS_API_VERSION);
+            $this->locations = $body->value;
+        }
+
+        return $this->locations;
+    }
     /**
      * Fetch token from Microsoft Azure.
      * Check out README.md on how to obtain these credentials.
@@ -239,5 +337,23 @@ abstract class AzureClient
         }
 
         return $this->client;
+    }
+
+    /**
+     * Validate if a given location exists.
+     *
+     * @param string $locationName
+     * @throws \Exception
+     * @return object
+     */
+    protected function validateLocation($locationName)
+    {
+        $locations = $this->listLocations();
+        foreach ($locations as $location) {
+            if ($locationName === $location->name) {
+                return $location;
+            }
+        }
+        throw new \Exception(sprintf('Unknown location: "%s"', $locationName));
     }
 }

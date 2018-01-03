@@ -5,9 +5,20 @@ namespace Azure\Entity;
 
 class NetworkInterface
 {
+    /**
+     * @var string
+     */
     public $location;
 
-    public $properties;
+    /**
+     * @var array
+     */
+    public $properties = [];
+
+    /**
+     * @var string
+     */
+    public $tags;
 
     /**
      * @param string $location
@@ -17,6 +28,9 @@ class NetworkInterface
         $this->location = $location;
     }
 
+    /**
+     * @param array $ipConfig
+     */
     public function addIpConfiguration($ipConfig)
     {
         $this->properties['ipConfigurations'][] = $ipConfig;
@@ -45,5 +59,13 @@ class NetworkInterface
     public function setPublicIp($publicIp)
     {
         $this->properties['ipConfigurations'][0]['properties']['publicIPAddress']['id'] = $publicIp;
+    }
+
+    /**
+     * @param string $tags
+     */
+    public function setTags($tags)
+    {
+        $this->tags = $tags;
     }
 }

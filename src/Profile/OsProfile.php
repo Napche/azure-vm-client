@@ -31,14 +31,6 @@ class OsProfile
     public $customData;
 
     /**
-     * OsProfile constructor.
-     */
-    public function __construct()
-    {
-        $this->linuxConfiguration['ssh']['publicKeys'] = [];
-    }
-
-    /**
      * @param string $computerName
      */
     public function setComputerName($computerName)

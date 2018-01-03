@@ -27,6 +27,11 @@ class VirtualMachine implements VirtualMachineInterface
     public $properties;
 
     /**
+     * @var string
+     */
+    public $tags;
+
+    /**
      * @var
      */
     private $resourceGroup;
@@ -105,6 +110,14 @@ class VirtualMachine implements VirtualMachineInterface
     public function setHardwareProfile($profile)
     {
         $this->properties['hardwareProfile'] = $profile;
+    }
+
+    /**
+     * @param string $tags
+     */
+    public function setTags($tags)
+    {
+        $this->tags = $tags;
     }
 
     /**

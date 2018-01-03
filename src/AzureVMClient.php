@@ -9,11 +9,6 @@ use Azure\Entity\VirtualMachineInterface;
 class AzureVMClient extends AzureClient
 {
     /**
-     * @var array
-     */
-    private $locations = [];
-
-    /**
      *  Lists the virtual machines in a subscription
      *
      * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-list-subscription
@@ -81,15 +76,13 @@ class AzureVMClient extends AzureClient
      * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update
      *
      * @param VirtualMachineInterface $machine
-     * @param string $resourceGroup
      * @return array
      */
-    public function createVM(VirtualMachineInterface $machine, $resourceGroup = 'Default')
+    public function createVM( VirtualMachineInterface $machine )
     {
         $this->validateLocation($machine->getLocation());
 
-        $url = $this->getVMUrl($machine->getName(), $resourceGroup);
-        $machine->setResourceGroup($resourceGroup);
+        $url = $this->getVMUrl($machine->getName(), $machine->getResourceGroup());
 
         return $this->put($url, $machine);
     }
@@ -200,23 +193,6 @@ class AzureVMClient extends AzureClient
     }
 
     /**
-     * Subscriptions - List Locations
-     *
-     * @see https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/listlocations
-     *
-     * @return array
-     */
-    public function listLocations()
-    {
-        if (!$this->locations) {
-            $body = $this->get('locations?api-version=' . static::LOCATIONS_API_VERSION);
-            $this->locations = $body->value;
-        }
-
-        return $this->locations;
-    }
-
-    /**
      * Resource Groups - List
      *
      * @see https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/list
@@ -242,6 +218,7 @@ class AzureVMClient extends AzureClient
     {
         $url = $this->getNetworkInterfaceUrl($machine->name, $machine->getResourceGroup());
         $interface->setLocation($machine->location);
+        $interface->setTags($machine->tags);
 
         return $this->put($url, $interface);
     }
@@ -263,10 +240,52 @@ class AzureVMClient extends AzureClient
         $url = $this->getPublicIPUrl($machine->name, $machine->getResourceGroup());
 
         $options = [
+            'tags' => $machine->tags,
             'location' => $machine->location,
             'properties' => [
                 'publicIPAllocationMethod' => 'Static',
                 'publicIPAddressVersion' => $ipv6 ? 'IPv6' : 'IPv4',
+            ]
+        ];
+        return $this->put($url, $options);
+    }
+
+
+    /**
+     * @param $machine
+     * @return mixed
+     */
+    public function createVirtualNetwork($name, $resourceGroup = 'Default', $location = 'westeurope')
+    {
+        $url = $this->getVirtualNetworkUrl($name, $resourceGroup);
+
+        $options = [
+            'location' => $location,
+            'properties' => [
+                'addressSpace' => [
+                  'addressPrefixes' => [
+                      "10.0.0.0/16"
+                  ]
+                ],
+                'subnets' => [],
+            ]
+        ];
+
+        return $this->put($url, $options);
+    }
+
+    /**
+     * @param $name
+     * @param string $resourceGroup
+     * @return mixed
+     */
+    public function createSubnet( $networkName, $name, $resourceGroup = 'Default')
+    {
+        $url = $this->getVirtualNetworkUrl($networkName, $resourceGroup, '/subnets/' . $name);
+
+        $options  = [
+            'properties' => [
+                'addressPrefix' => '10.0.0.0/16',
             ]
         ];
         return $this->put($url, $options);
@@ -303,6 +322,18 @@ class AzureVMClient extends AzureClient
     }
 
     /**
+     * Helper to get Virtual Network Url by ResourceGroup
+     *
+     * @param $name
+     * @param $resourceGroup
+     * @return string
+     */
+    public function getVirtualNetworkUrl( $name, $resourceGroup = 'Default', $suffix = '')
+    {
+        return 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/virtualNetworks/' . $name . $suffix . '?api-version=' . static::NETWORK_INTERFACE_API_VERSION;
+    }
+
+    /**
      * Helper to get NetworkInterface Url by ResourceGroup
      *
      * @param $name
@@ -312,24 +343,6 @@ class AzureVMClient extends AzureClient
     public function getPublicIPUrl( $name, $resourceGroup = 'Default' )
     {
         return 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/publicIPAddresses/' . $name . '?api-version=' . static::NETWORK_INTERFACE_API_VERSION;
-    }
-
-    /**
-     * Validate if a given location exists.
-     *
-     * @param string $locationName
-     * @throws \Exception
-     * @return object
-     */
-    private function validateLocation($locationName)
-    {
-        $locations = $this->listLocations();
-        foreach ($locations as $location) {
-            if ($locationName === $location->name) {
-                return $location;
-            }
-        }
-        throw new \Exception(sprintf('Unknown location: "%s"', $locationName));
     }
 
     /**
