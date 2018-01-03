@@ -14,6 +14,8 @@ abstract class AzureClient
     const LOCATIONS_API_VERSION = '2016-06-01';
     const RESOURCEGROUPS_API_VERSION = '2017-05-10';
     const NETWORK_INTERFACE_API_VERSION = '2017-10-01';
+    const IMAGES_API_VERSION = '2017-12-01';
+    const RESOURCE_API_VERSION = '2017-03-30';
 
     /**
      * @var string
@@ -85,6 +87,8 @@ abstract class AzureClient
     }
 
     /**
+     * DELETE wrapper
+     *
      * @param $url
      * @return mixed
      * @throws \Exception
@@ -130,6 +134,8 @@ abstract class AzureClient
     }
 
     /**
+     * POST wrapper
+     *
      * @param $url
      * @param array $params
      * @return mixed
@@ -154,6 +160,10 @@ abstract class AzureClient
 
 
     /**
+     * Create a new resource Group
+     *
+     * @see https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/createorupdate
+     *
      * @param $name
      * @param string $location
      * @param string $tags
@@ -173,7 +183,11 @@ abstract class AzureClient
     }
 
     /**
-     * @param $id
+     * Delete a resource Group
+     *
+     * @see https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/delete
+     *
+     * @param string $name
      * @return int
      */
     public function deleteResourceGroup($name)
@@ -184,28 +198,41 @@ abstract class AzureClient
     }
 
     /**
-     * @param $tagName
-     * @return string
+     * Get a list of Resources by Tag.
+     *
+     * @param string $tagName
+     * @param string $tagValue
+     * @return array
      */
     public function getTaggedResources($tagName, $tagValue)
     {
         $body = $this->get('resources?$filter=tagname eq \''. $tagName .'\' and tagvalue eq \'' . $tagValue .'\'&api-version=' . static::RESOURCEGROUPS_API_VERSION);
+
         return $body->value;
     }
 
     /**
-     * @param $id
+     * Delete a resource by Id.
+     *
+     * @see https://docs.microsoft.com/en-us/rest/api/resources/resources/delete
+     *
+     * @param string $id
      * @return int
      */
     public function deleteResource($id)
     {
-        $url = static::API_BASE_URL . ltrim($id, '/') . '?api-version=2017-03-30'; // Other API Version needed for delete ( WTF?? )
+        $url = static::API_BASE_URL . ltrim($id, '/') . '?api-version=' . static::RESOURCE_API_VERSION;
         $result = $this->client->delete($url);
+
         return $result->getStatusCode();
     }
 
     /**
-     * @param $id
+     * Get a resource by Id.
+     *
+     * @see https://docs.microsoft.com/en-us/rest/api/resources/resources/getbyid
+     *
+     * @param string $id
      * @return object
      */
     public function getResource($id)
@@ -213,7 +240,7 @@ abstract class AzureClient
         $parts = explode('/', $id);
 
         $url = static::API_BASE_URL . ltrim($id, '/'); // Other API Version needed for delete ( WTF?? )
-        $api = '2017-03-30';
+        $api = static::RESOURCE_API_VERSION;
 
         switch (true) {
             case in_array('networkInterfaces', $parts):
@@ -221,7 +248,7 @@ abstract class AzureClient
                 $api = static::NETWORK_INTERFACE_API_VERSION;
                 break;
             case in_array('images', $parts):
-                $api = '2017-12-01';
+                $api = static::IMAGES_API_VERSION;
                 break;
         }
 
@@ -246,6 +273,7 @@ abstract class AzureClient
 
         return $this->locations;
     }
+
     /**
      * Fetch token from Microsoft Azure.
      * Check out README.md on how to obtain these credentials.

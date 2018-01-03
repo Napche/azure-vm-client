@@ -29,11 +29,23 @@ The values `tenant`, `appId` and `password` are used in the Client constructor.
 ```php
         use Azure\Entity\VirtualMachine;
         use Azure\Entity\AzureVMClient;
+        use Azure\Entity\Profile\StorageProfile;
         
+        
+        $resourceGroupName = 'new-resource-group';
+        $client->createResourceGroup($resourceGroupName, $region, $tag);
+        
+        // Create new machine
         $name = 'new_vm';
         $region = 'westeurope';
         $machine = new VirtualMachine( $name, $region );
-
+        $machine->setResourceGroup( $resourceGroupName );
+        
+        // Add or change Profiles..
+        $storage = new StorageProfile();
+        $machine->setStorageProfile( $storage );
+        
+        // Call client and create.
         $client = new AzureVMClient(
             $tenant,
             $subscriptionId,
@@ -42,5 +54,6 @@ The values `tenant`, `appId` and `password` are used in the Client constructor.
         );
         $client->createVM( $machine );
         
-        $client->deleteVM( $name );
+        // Delete afterwards.
+        $client->deleteResourceGroup( $resourceGroupName );
 ```
