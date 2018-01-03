@@ -64,6 +64,18 @@ class AzureVMClient extends AzureClient
     }
 
     /**
+     * @param $name
+     * @param string $resourceGroup
+     */
+    public function getVMDetail($name, $resourceGroup = 'Default')
+    {
+        $url = $this->getVMUrl( $name, $resourceGroup );
+        $body = $this->get($url);
+        return $body;
+    }
+
+
+    /**
      * Create or update a virtual machine
      *
      * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update
@@ -87,7 +99,7 @@ class AzureVMClient extends AzureClient
      */
     public function updateVM(VirtualMachineInterface $machine, $resourceGroup = 'Default')
     {
-        $this->createVM($machine, $resourceGroup);
+        return $this->createVM($machine, $resourceGroup);
     }
 
     /**
@@ -242,6 +254,25 @@ class AzureVMClient extends AzureClient
     }
 
     /**
+     * @param VirtualMachineInterface|null $machine
+     * @param bool $ipv6
+     * @return mixed
+     */
+    public function createPublicIpAddress(VirtualMachineInterface $machine, $ipv6 = false)
+    {
+        $url = $this->getPublicIPUrl($machine->name, $machine->getResourceGroup());
+
+        $options = [
+            'location' => $machine->location,
+            'properties' => [
+                'publicIPAllocationMethod' => 'Static',
+                'publicIPAddressVersion' => $ipv6 ? 'IPv6' : 'IPv4',
+            ]
+        ];
+        return $this->put($url, $options);
+    }
+
+    /**
      * Helper to get VM Url by ResourceGroup
      *
      * @param string $vm
@@ -269,6 +300,18 @@ class AzureVMClient extends AzureClient
     public function getNetworkInterfaceUrl( $name, $resourceGroup = 'Default' )
     {
         return 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/networkInterfaces/' . $name . '?api-version=' . static::NETWORK_INTERFACE_API_VERSION;
+    }
+
+    /**
+     * Helper to get NetworkInterface Url by ResourceGroup
+     *
+     * @param $name
+     * @param $resourceGroup
+     * @return string
+     */
+    public function getPublicIPUrl( $name, $resourceGroup = 'Default' )
+    {
+        return 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/publicIPAddresses/' . $name . '?api-version=' . static::NETWORK_INTERFACE_API_VERSION;
     }
 
     /**

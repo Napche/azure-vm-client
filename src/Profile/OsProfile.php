@@ -5,16 +5,41 @@ namespace Azure\Profile;
 
 class OsProfile
 {
+    /**
+     * @var string
+     */
     public $computerName;
 
+    /**
+     * @var string
+     */
     public $adminUserName;
 
+    /**
+     * @var string
+     */
     public $adminPassword;
 
+    /**
+     * @var array
+     */
     public $linuxConfiguration = [];
 
     /**
-     * @param mixed $computerName
+     * @var string
+     */
+    public $customData;
+
+    /**
+     * OsProfile constructor.
+     */
+    public function __construct()
+    {
+        $this->linuxConfiguration['ssh']['publicKeys'] = [];
+    }
+
+    /**
+     * @param string $computerName
      */
     public function setComputerName($computerName)
     {
@@ -22,7 +47,7 @@ class OsProfile
     }
 
     /**
-     * @param mixed $adminUserName
+     * @param string $adminUserName
      */
     public function setAdminUserName($adminUserName)
     {
@@ -30,7 +55,7 @@ class OsProfile
     }
 
     /**
-     * @param mixed $adminPassword
+     * @param string $adminPassword
      */
     public function setAdminPassword($adminPassword)
     {
@@ -38,7 +63,15 @@ class OsProfile
     }
 
     /**
-     * @param mixed $linuxConfiguration
+     * @param string $customData
+     */
+    public function setCustomData($customData)
+    {
+        $this->customData = $customData;
+    }
+
+    /**
+     * @param array $linuxConfiguration
      */
     public function setLinuxConfiguration($linuxConfiguration)
     {

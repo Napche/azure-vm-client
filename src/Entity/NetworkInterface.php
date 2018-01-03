@@ -35,14 +35,15 @@ class NetworkInterface
      */
     public function setSubnet($subnetId)
     {
-        $subnet = [
-            'name' => 'default',
-            'properties' => [
-                'subnet' => [
-                    'id' => $subnetId
-                ]
-            ]
-        ];
-        $this->properties['ipConfigurations'][] = $subnet;
+        $this->properties['ipConfigurations'][0]['name'] = 'default';
+        $this->properties['ipConfigurations'][0]['properties']['subnet']['id'] = $subnetId;
+    }
+
+    /**
+     * @param $publicIp
+     */
+    public function setPublicIp($publicIp)
+    {
+        $this->properties['ipConfigurations'][0]['properties']['publicIPAddress']['id'] = $publicIp;
     }
 }
