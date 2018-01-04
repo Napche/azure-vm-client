@@ -233,17 +233,20 @@ class AzureVMClient extends AzureClient
      *
      * @see https://docs.microsoft.com/en-us/rest/api/virtualnetwork/publicipaddresses/createorupdate
      *
-     * @param VirtualMachineInterface|null $machine
+     * @param string $name
+     * @param string $resourceGroup
+     * @param string $location
+     * @param string $tags
      * @param bool $ipv6
      * @return mixed
      */
-    public function createPublicIpAddress(VirtualMachineInterface $machine, $ipv6 = false)
+    public function createPublicIpAddress($name, $resourceGroup, $location, $tags = '', $ipv6 = false)
     {
-        $url = $this->getPublicIPUrl($machine->name, $machine->getResourceGroup());
+        $url = $this->getPublicIPUrl($name, $resourceGroup);
 
         $options = [
-            'tags' => $machine->tags,
-            'location' => $machine->location,
+            'tags' => $tags,
+            'location' => $location,
             'properties' => [
                 'publicIPAllocationMethod' => $ipv6 ? 'Dynamic' : 'Static',
                 'publicIPAddressVersion' => $ipv6 ? 'IPv6' : 'IPv4',
