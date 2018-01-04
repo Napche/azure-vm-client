@@ -77,4 +77,12 @@ class OsProfile
     {
         $this->linuxConfiguration['ssh']['publicKeys'][] = $key;
     }
+
+    /**
+     * @param bool $disable
+     */
+    public function disablePasswordAuthentication($disable = true)
+    {
+        $this->linuxConfiguration['disablePasswordAuthentication'] = $disable;
+    }
 }
