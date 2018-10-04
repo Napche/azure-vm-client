@@ -34,6 +34,38 @@ class AzureVMClient extends AzureClient
         return $body->value;
     }
 
+    public function listPublishers($location)
+    {
+        return $this->get($this->getPublisherRequest($location) . '?api-version=' . static::IMAGES_API_VERSION);
+    }
+    
+    public function listOffers($location, $publisher)
+    {
+        return $this->get($this->getPublisherRequest($location) . '/' . $publisher . '/artifacttypes/vmimage/offers?api-version=' . static::IMAGES_API_VERSION);
+    }
+
+    /**
+     * @param $location
+     * @param $publisher
+     * @param $offer
+     * @return mixed
+     * @throws \Exception
+     */
+    public function listSkus($location, $publisher, $offer)
+    {
+        return $this->get($this->getPublisherRequest($location) . '/' . $publisher . '/artifacttypes/vmimage/offers/' . $offer . '/skus?api-version=' . static::IMAGES_API_VERSION);
+    }
+
+    /**
+     * @param $location
+     * @return string
+     */
+    private function getPublisherRequest($location)
+    {
+        $this->validateLocation($location);
+        return 'providers/Microsoft.Compute/locations/'.$location.'/publishers';
+    }
+
     /**
      * Get information about a virtual machine
      *
