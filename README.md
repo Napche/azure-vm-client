@@ -55,7 +55,7 @@ The values `tenant`, `appId` and `password` are used in the Client constructor.
         /*
         // Create client and authenticate LATER.
         $client = new AzureVMClient(
-            $subscriptionId,
+            $subscriptionId
         );
         
         // Do some other stuff.
