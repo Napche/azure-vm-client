@@ -66,7 +66,7 @@ abstract class AzureClient
         // authentication which is useful when building services around this
         // Azure client.
         if ($tenantId !== null && $appId !== null && $password !== null) {
-            $this->authenticationToken = $this->authenticate($tenantId, $appId, $password);
+            $this->authenticate($tenantId, $appId, $password);
         }
     }
 
@@ -325,7 +325,7 @@ abstract class AzureClient
 
         $body = $this->parseResponse($r);
         if (isset($body->token_type, $body->access_token) && $body->token_type === 'Bearer') {
-            return $body->access_token;
+            $this->authenticationToken = $body->access_token;
         }
 
         throw new \Exception('Unable to fetch Access Token for Azure.');
