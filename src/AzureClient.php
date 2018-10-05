@@ -312,7 +312,7 @@ abstract class AzureClient
      */
     public function authenticateClient()
     {
-        if ($this->tenantId === null || $this->sappId === null || $this->password === null) {
+        if ($this->tenantId === null || $this->appId === null || $this->password === null) {
             throw new \Exception("Missing parameters to authenticate Client");
         }
 
