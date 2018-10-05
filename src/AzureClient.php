@@ -43,6 +43,21 @@ abstract class AzureClient
     protected $guzzleVersion;
 
     /**
+     * @var string
+     */
+    private $tenantId;
+
+    /**
+     * @var string
+     */
+    private $appId;
+
+    /**
+     * @var string
+     */
+    private $password;
+
+    /**
      * @var array
      */
     protected $locations = [];
@@ -62,12 +77,9 @@ abstract class AzureClient
         $this->guzzleVersion = (version_compare(Client::VERSION, 6) === 1 ) ? 6 : 5;
         $this->subscriptionId = $subscriptionId;
         $this->subscriptionUrl = self::API_BASE_URL.'subscriptions/'.$subscriptionId.'/';
-        // This allows to construct a client WITHOUT automatically triggering
-        // authentication which is useful when building services around this
-        // Azure client.
-        if ($tenantId !== null && $appId !== null && $password !== null) {
-            $this->authenticate($tenantId, $appId, $password);
-        }
+        $this->tenantId = $tenantId;
+        $this->appId = $appId;
+        $this->password = $password;
     }
 
     /**
@@ -298,27 +310,35 @@ abstract class AzureClient
      * @return string
      * @throws \Exception
      */
-    public function authenticate($tenantId, $appId, $password)
+    public function authenticateClient()
     {
+        if ($this->tenantId === null || $this->sappId === null || $this->password === null) {
+            throw new \Exception("Missing parameters to authenticate Client");
+        }
+
+        if (!is_null($this->authenticationToken)) {
+            return;
+        }
+
         $client = new Client();
         $body = [
             'resource' => 'https://management.core.windows.net/',
-            'client_id' => $appId,
-            'client_secret' => $password,
+            'client_id' => $this->appId,
+            'client_secret' => $this->password,
             'grant_type' => 'client_credentials',
         ];
 
         switch($this->guzzleVersion) {
             case 5:
                 $r = $client->post(
-                    "https://login.windows.net/".$tenantId."/oauth2/token",
+                    "https://login.windows.net/".$this->tenantId."/oauth2/token",
                     ['body' => $body]
                 );
                 break;
             default:
                 $r = $client->request(
                     'POST',
-                    "https://login.windows.net/".$tenantId."/oauth2/token",
+                    "https://login.windows.net/".$this->tenantId."/oauth2/token",
                     ['form_params' => $body]
                 );
         }
@@ -326,9 +346,23 @@ abstract class AzureClient
         $body = $this->parseResponse($r);
         if (isset($body->token_type, $body->access_token) && $body->token_type === 'Bearer') {
             $this->authenticationToken = $body->access_token;
+            return;
         }
 
         throw new \Exception('Unable to fetch Access Token for Azure.');
+    }
+
+    /**
+     * @param $tenantId
+     * @param $appId
+     * @param $password
+     */
+    public function authenticate($tenantId, $appId, $password)
+    {
+        $this->tenantId = $tenantId;
+        $this->appId = $appId;
+        $this->password = $password;
+        $this->authenticationToken = null;
     }
 
     /**
@@ -347,6 +381,7 @@ abstract class AzureClient
         throw new \Exception($r->getBody()->getContents());
     }
 
+
     /**
      * Get/create Guzzle Client for Azure API.
      *
@@ -354,6 +389,7 @@ abstract class AzureClient
      */
     protected function getClient()
     {
+        $this->authenticateClient();
         if (!isset($this->client)) {
             $config = [
                 'headers' => [
