@@ -50,17 +50,24 @@ abstract class AzureClient
     /**
      * AzureVMClient constructor.
      *
-     * @param string $tenantId
      * @param string $subscriptionId
+     * @param string $tenantId
      * @param string $appId
      * @param string $password
+     *
+     * @throws \Exception
      */
-    public function __construct($tenantId, $subscriptionId, $appId, $password)
+    public function __construct($subscriptionId, $tenantId = null, $appId = null, $password = null)
     {
         $this->guzzleVersion = (version_compare(Client::VERSION, 6) === 1 ) ? 6 : 5;
-        $this->authenticationToken = $this->getToken($tenantId, $appId, $password);
         $this->subscriptionId = $subscriptionId;
         $this->subscriptionUrl = self::API_BASE_URL.'subscriptions/'.$subscriptionId.'/';
+        // This allows to construct a client WITHOUT automatically triggering
+        // authentication which is useful when building services around this
+        // Azure client.
+        if ($tenantId !== null && $appId !== null && $password !== null) {
+            $this->authenticationToken = $this->authenticate($tenantId, $appId, $password);
+        }
     }
 
     /**
@@ -291,7 +298,7 @@ abstract class AzureClient
      * @return string
      * @throws \Exception
      */
-    private function getToken($tenantId, $appId, $password)
+    public function authenticate($tenantId, $appId, $password)
     {
         $client = new Client();
         $body = [

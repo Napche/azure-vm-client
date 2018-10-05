@@ -44,13 +44,26 @@ The values `tenant`, `appId` and `password` are used in the Client constructor.
         $storage = new StorageProfile();
         $machine->setStorageProfile( $storage );
         
-        // Call client and create.
+        // Create client with instant authentication.
         $client = new AzureVMClient(
-            $tenant,
             $subscriptionId,
+            $tenant,
             $applicationId,
             $password
         );
+        
+        /*
+        // Create client and authenticate LATER.
+        $client = new AzureVMClient(
+            $subscriptionId,
+        );
+        
+        // Do some other stuff.
+        
+        $client->authenticate($tenant, $applicationId, $password);
+        */
+        
+        // Create a VM.
         $client->createVM( $machine );
         
         // Delete afterwards.
