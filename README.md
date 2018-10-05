@@ -28,9 +28,8 @@ The values `tenant`, `appId` and `password` are used in the Client constructor.
 ## Example Usage
 ```php
         use Azure\Entity\VirtualMachine;
-        use Azure\Entity\AzureVMClient;
-        use Azure\Entity\Profile\StorageProfile;
-        
+        use Azure\AzureVMClient;
+        use Azure\Profile\StorageProfile;
         
         $resourceGroupName = 'new-resource-group';
         $client->createResourceGroup($resourceGroupName, $region, $tag);
