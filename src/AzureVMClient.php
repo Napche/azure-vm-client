@@ -34,6 +34,13 @@ class AzureVMClient extends AzureClient
         return $body->value;
     }
 
+    /**
+     * List all available publishers for a location.
+     *
+     * @param string $location
+     * @return array
+     * @throws \Exception
+     */
     public function listPublishers($location)
     {
         return $this->get($this->getPublisherRequest($location) . '?api-version=' . static::IMAGES_API_VERSION);
@@ -45,10 +52,12 @@ class AzureVMClient extends AzureClient
     }
 
     /**
-     * @param $location
-     * @param $publisher
-     * @param $offer
-     * @return mixed
+     * List all Skus for a given publisher at a given location.
+     *
+     * @param string $location
+     * @param string $publisher
+     * @param string $offer
+     * @return array
      * @throws \Exception
      */
     public function listSkus($location, $publisher, $offer)
@@ -57,13 +66,14 @@ class AzureVMClient extends AzureClient
     }
 
     /**
-     * @param $location
-     * @return string
+     * List all available skus.
+     *
+     * @return array
+     * @throws \Exception
      */
-    private function getPublisherRequest($location)
+    public function listSubscriptionSkus()
     {
-        $this->validateLocation($location);
-        return 'providers/Microsoft.Compute/locations/'.$location.'/publishers';
+        return $this->get('providers/Microsoft.Compute/skus?api-version=' . static::SKU_API_VERSION);
     }
 
     /**
@@ -119,7 +129,6 @@ class AzureVMClient extends AzureClient
         $this->validateLocation($machine->getLocation());
 
         $url = $this->getVMUrl($machine->getName(), $machine->getResourceGroup());
-
         return $this->put($url, $machine);
     }
 
@@ -409,5 +418,16 @@ class AzureVMClient extends AzureClient
             }
         }
         throw new \Exception('Unknown ResourceGroup');
+    }
+
+    /**
+     * Helper function to build publishers url.
+     * @param string $location
+     * @return string
+     */
+    private function getPublisherRequest($location)
+    {
+        $this->validateLocation($location);
+        return 'providers/Microsoft.Compute/locations/'.$location.'/publishers';
     }
 }

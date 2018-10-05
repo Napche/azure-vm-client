@@ -1,9 +1,8 @@
 <?php
 
-
 namespace Azure;
 
-
+use Azure\Exception\RetryableException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\ResponseInterface;
 
@@ -16,6 +15,7 @@ abstract class AzureClient
     const NETWORK_INTERFACE_API_VERSION = '2017-10-01';
     const IMAGES_API_VERSION = '2017-12-01';
     const RESOURCE_API_VERSION = '2017-03-30';
+    const SKU_API_VERSION = '2017-09-01';
 
     /**
      * @var string
@@ -114,6 +114,7 @@ abstract class AzureClient
      * @param $url
      * @return mixed
      * @throws \Exception
+     * @throws RetryableException
      */
     public function put($url, $params = [])
     {
@@ -129,6 +130,9 @@ abstract class AzureClient
         catch (\Exception $e)
         {
             $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            if (stripos($error['error']['message'], 'retryable error') > 0) {
+                throw new RetryableException($error['error']['message']);
+            }
             throw new \Exception($error['error']['message']);
         }
     }
@@ -154,6 +158,9 @@ abstract class AzureClient
         catch (\Exception $e)
         {
             $error = json_decode($e->getResponse()->getBody()->getContents(), true);
+            if (stripos($error['error']['message'], 'retryable error') > 0) {
+                throw new RetryableException($error['error']['message']);
+            }
             throw new \Exception($error['error']['message']);
         }
     }
