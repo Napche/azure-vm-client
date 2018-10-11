@@ -11,8 +11,6 @@ class AzureVMClient extends AzureClient
     /**
      *  Lists the virtual machines in a subscription
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-list-subscription
-     *
      * @return array
      */
     public function listVM()
@@ -79,8 +77,6 @@ class AzureVMClient extends AzureClient
     /**
      * Get information about a virtual machine
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-get
-     *
      * @param string $name
      * @param string $resourceGroup
      * @return string
@@ -119,8 +115,6 @@ class AzureVMClient extends AzureClient
     /**
      * Create or update a virtual machine
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-create-or-update
-     *
      * @param VirtualMachineInterface $machine
      * @return array
      */
@@ -143,8 +137,6 @@ class AzureVMClient extends AzureClient
     /**
      * Delete a virtual machine
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-delete
-     *
      * @param $name
      * @param string $resourceGroup
      * @return mixed
@@ -158,8 +150,6 @@ class AzureVMClient extends AzureClient
 
     /**
      * Start a virtual machine
-     *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-start
      *
      * @param $name
      * @param string $resourceGroup
@@ -176,8 +166,6 @@ class AzureVMClient extends AzureClient
     /**
      * Restart a virtual machine
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-restart
-     *
      * @param $name
      * @param string $resourceGroup
      * @return mixed
@@ -191,8 +179,6 @@ class AzureVMClient extends AzureClient
 
     /**
      * Stop a virtual machine
-     *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-stop
      *
      * @param $name
      * @param string $resourceGroup
@@ -208,8 +194,6 @@ class AzureVMClient extends AzureClient
     /**
      * Stop and deallocate a virtual machine
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-stop-deallocate
-     *
      * @param $name
      * @param string $resourceGroup
      * @return mixed
@@ -223,8 +207,6 @@ class AzureVMClient extends AzureClient
 
     /**
      * Lists available virtual machine sizes for a subscription
-     *
-     * @see https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/virtualmachines-list-sizes-region
      *
      * @param string $location
      * @return array
@@ -240,8 +222,6 @@ class AzureVMClient extends AzureClient
     /**
      * Resource Groups - List
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/list
-     *
      * @return array
      */
     public function listResourceGroups()
@@ -253,8 +233,6 @@ class AzureVMClient extends AzureClient
 
     /**
      * Create or Update Network Interface
-     *
-     * @link https://docs.microsoft.com/en-us/rest/api/virtualnetwork/networkinterfaces/createorupdate
      *
      * @param VirtualMachineInterface|null $machine
      * @param NetworkInterface $interface
@@ -271,8 +249,6 @@ class AzureVMClient extends AzureClient
 
     /**
      * Public IP Addresses - Create Or Update
-     *
-     * @see https://docs.microsoft.com/en-us/rest/api/virtualnetwork/publicipaddresses/createorupdate
      *
      * @param string $name
      * @param string $resourceGroup
@@ -300,48 +276,113 @@ class AzureVMClient extends AzureClient
     /**
      * Create Virtual Network
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/virtualnetwork/virtualnetworks/createorupdate
-     *
      * @param string $name
      * @param string $resourceGroup
      * @param string $location
+     * @param array $prefixes
+     * @param string $tags
      * @return object
      */
-    public function createVirtualNetwork($name, $resourceGroup = 'Default', $location = 'westeurope')
+    public function createVirtualNetwork($name, $resourceGroup = 'Default', $location = 'westeurope', $prefixes = ["10.0.0.0/16"], $tags = '')
     {
         $url = $this->getVirtualNetworkUrl($name, $resourceGroup);
 
         $options = [
+            'tags' => $tags,
             'location' => $location,
             'properties' => [
                 'addressSpace' => [
-                  'addressPrefixes' => [
-                      "10.0.0.0/16"
-                  ]
+                  'addressPrefixes' => $prefixes,
                 ],
                 'subnets' => [],
-            ]
+            ],
         ];
 
         return $this->put($url, $options);
     }
 
     /**
-     * Create a subnet.
+     * Get All virtual networks for a given location.
      *
-     * @see https://docs.microsoft.com/en-us/rest/api/virtualnetwork/subnets/createorupdate
+     * @param $location
+     * @return array
+     * @throws \Exception
+     */
+    public function getVirtualNetworks($location)
+    {
+        $body = $this->get('resources?$filter=resourceType eq \'Microsoft.Network/virtualNetworks\' and location eq \''. $location . '\'&api-version=' . static::RESOURCEGROUPS_API_VERSION);
+        return $body->value;
+    }
+
+    /**
+     * Get Details about a Virtual Network
+     *
+     * @param $virtualNetworkName
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getVirtualNetworkDetail($virtualNetworkName)
+    {
+        $body = $this->get('resources?$filter=resourceType eq \'Microsoft.Network/virtualNetworks\' and name eq \''. $virtualNetworkName . '\'&api-version=' . static::RESOURCEGROUPS_API_VERSION);
+        return $body->value;
+    }
+
+    /**
+     * Get all virtual networks.
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getAllVirtualNetworks()
+    {
+        $body = $this->get( 'providers/Microsoft.Network/virtualNetworks?api-version=2018-01-01');
+        return $body->value;
+    }
+
+
+    /**
+     * Get Subnets for a virtual network.
+     *
+     * @param string $resourceGroup
+     * @param string $virtualNetworkName
+     */
+    public function getVirtualNetworkSubnets($resourceGroup, $virtualNetworkName)
+    {
+        $url = $this->getVirtualNetworkUrl($virtualNetworkName, $resourceGroup, '/subnets');
+        $body = $this->get($url);
+        return $body->value;
+    }
+
+
+    /**
+     * Check IP Availability for a virtual Network.
+     *
+     * @param string $resourceGroup
+     * @param string $virtualNetworkName
+     * @return array
+     * @throws \Exception
+     */
+    public function checkIpAvailability($resourceGroup, $virtualNetworkName)
+    {
+        $url = 'resourceGroups/'. $resourceGroup .'/providers/Microsoft.Network/virtualNetworks/' . $virtualNetWorkName . '/CheckIPAddressAvailability?ipAddress=10.0.0.0&api-version=' . static::NETWORK_INTERFACE_API_VERSION;
+        $body = $this->get($url);
+        return $body->value;
+    }
+
+    /**
+     * Create a subnet.
      *
      * @param $name
      * @param string $resourceGroup
      * @return mixed
      */
-    public function createSubnet( $networkName, $name, $resourceGroup = 'Default')
+    public function createSubnet( $networkName, $name, $resourceGroup = 'Default', $prefix = '10.0.0.0/16')
     {
         $url = $this->getVirtualNetworkUrl($networkName, $resourceGroup, '/subnets/' . $name);
 
         $options  = [
             'properties' => [
-                'addressPrefix' => '10.0.0.0/16',
+                'addressPrefix' => $prefix,
             ]
         ];
 
