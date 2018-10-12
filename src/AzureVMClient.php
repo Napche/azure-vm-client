@@ -33,6 +33,18 @@ class AzureVMClient extends AzureClient
     }
 
     /**
+     * @param $vmName
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getVmDetailsByName($vmName)
+    {
+        $body = $this->get('resources?$filter=resourceType eq \'Microsoft.Compute/virtualMachines\'and name eq \'' . $vmName . '\'&api-version=' . static::RESOURCEGROUPS_API_VERSION);
+
+        return $body->value;
+    }
+
+    /**
      * List all available publishers for a location.
      *
      * @param string $location
