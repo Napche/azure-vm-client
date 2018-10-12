@@ -234,16 +234,16 @@ class AzureVMClient extends AzureClient
     /**
      * Create or Update Network Interface
      *
+     * @param string $name
      * @param VirtualMachineInterface|null $machine
      * @param NetworkInterface $interface
      * @return mixed
      */
-    public function createNetworkInterface( VirtualMachineInterface $machine, NetworkInterface $interface)
+    public function createNetworkInterface( $name, VirtualMachineInterface $machine, NetworkInterface $interface)
     {
-        $url = $this->getNetworkInterfaceUrl($machine->name, $machine->getResourceGroup());
+        $url = $this->getNetworkInterfaceUrl($name, $machine->getResourceGroup());
         $interface->setLocation($machine->location);
         $interface->setTags($machine->tags);
-
         return $this->put($url, $interface);
     }
 
