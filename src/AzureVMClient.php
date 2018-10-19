@@ -123,7 +123,6 @@ class AzureVMClient extends AzureClient
         return $body;
     }
 
-
     /**
      * Create or update a virtual machine
      *
@@ -311,6 +310,50 @@ class AzureVMClient extends AzureClient
         ];
 
         return $this->put($url, $options);
+    }
+
+    /**
+     * @param $resourceGroup
+     * @param $virtualNetworkPeeringname
+     * @param $virtualNetworkName
+     * @param $forwardedTraffic
+     * @param $gatewayTransit
+     * @param $vnetAccess
+     * @throws Exception\RetryableException
+     */
+    public function createVirtualNetworkPeering(
+        $resourceGroup,
+        $virtualNetworkPeeringname,
+        $virtualNetworkName,
+        $remoteNetworkId,
+        $forwardedTraffic = true,
+        $gatewayTransit = true,
+        $vnetAccess = true)
+    {
+        $suffix = "/virtualNetworkPeerings/" . $virtualNetworkPeeringname;
+        $url = $this->getVirtualNetworkUrl($virtualNetworkName, $resourceGroup, $suffix);
+        $params = [
+            'properties' => [
+                'allowVirtualNetworkAccess' => $vnetAccess,
+                'allowGatewayTransit' => $gatewayTransit,
+                'allowForwardedTraffic' => $forwardedTraffic,
+                'remoteVirtualNetwork' => ['id' => $remoteNetworkId],
+            ]
+        ];
+        $this->put($url, $params);
+    }
+    
+    /**
+     * @param string $resourceGroup
+     * @param string $virtualNetworkName
+     * @param string $peeringName
+     * @throws \Exception
+     */
+    public function deleteNetworkPeering($resourceGroup, $virtualNetworkName, $peeringName )
+    {
+        $suffix = "/virtualNetworkPeerings/" . $peeringName;
+        $url = $this->getVirtualNetworkUrl($virtualNetworkName, $resourceGroup, $suffix);
+        $this->delete($url);
     }
 
     /**
