@@ -225,7 +225,7 @@ class AzureVMClient extends AzureClient
     public function listVMSizes($location)
     {
         $this->validateLocation($location);
-        $body = $this->get('providers/Microsoft.Compute/locations/'. $location .'/vmSizes?api-version=' . static::VM_API_VERSION);
+        $body = $this->get('providers/Microsoft.Compute/locations/'. $location .'/vmSizes?api-version=' . static::VM_SIZES_VERSION);
 
         return $body->value;
     }

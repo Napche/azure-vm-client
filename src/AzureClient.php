@@ -10,12 +10,13 @@ abstract class AzureClient
 {
     const API_BASE_URL = 'https://management.azure.com/';
     const VM_API_VERSION = '2016-04-30-preview';
-    const LOCATIONS_API_VERSION = '2016-06-01';
+    const LOCATIONS_API_VERSION = '2018-09-01';
     const RESOURCEGROUPS_API_VERSION = '2017-05-10';
     const NETWORK_INTERFACE_API_VERSION = '2017-10-01';
     const IMAGES_API_VERSION = '2017-12-01';
     const RESOURCE_API_VERSION = '2017-03-30';
     const SKU_API_VERSION = '2017-09-01';
+    const VM_SIZES_VERSION = '2018-10-01';
 
     /**
      * @var string
